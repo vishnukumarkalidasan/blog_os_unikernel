@@ -1,0 +1,61 @@
+name: Test Suite
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    name: Build
+    strategy:
+      matrix:
+        platform: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Set rustup profile to `minimal`
+        run: rustup set profile minimal
+      - name: Run `cargo kbuild`
+        uses: actions-rs/cargo@v1
+        with:
+          command: kbuild
+
+  check_formatting:
+    name: Check Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Install Rust Toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          components: rustfmt
+          override: true
+      - name: Run `cargo fmt`
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Install Rust Toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          components: clippy, rust-src
+          override: true
+      - name: Run `cargo clippy`
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --target x86_64-blog_os.json -Z build-std=core -Z build-std-features=compiler-builtins-mem
