@@ -118,6 +118,8 @@ jobs:
   clippy:
     name: Clippy
     runs-on: ubuntu-latest
+    env:
+      RUST_BACKTRACE: 1
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
