@@ -49,6 +49,8 @@ dependencies = [
 [[package]]
 name = "bootloader_api"
 version = "0.1.0-alpha.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1d77bfc1b2e2484c50c1b95b765c52424457a80627d4a097a246eb5d9b6c9756"
 
 [[package]]
 name = "build_const"
