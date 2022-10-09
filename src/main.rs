@@ -13,6 +13,107 @@ use core::panic::PanicInfo;
 
 entry_point!(kernel_main);
 
+///////////////////////////////////////////////////////////////////////////////////////////
+////this part of the code is for linked list testing///////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+pub fn swap<T>(a: &mut T, b: &mut T) where T : Copy {
+    unsafe{
+    (*a,*b) = (*b, *a)
+    }
+}
+
+#[derive(Debug, PartialEq)]
+struct ListNodeValue<T> {
+    item: T,
+    next: Box<ListNode<T>>,
+}
+
+impl<T> ListNodeValue<T> {
+    fn new(item: T, next: Box<ListNode<T>>) -> Self {
+        Self { item, next }
+    }
+}
+
+impl<T> Clone for ListNodeValue<T>
+where
+    T: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            item: self.item.clone(),
+            next: Box::clone(&self.next),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+enum ListNode<T> {
+    Empty,
+    NonEmpty(ListNodeValue<T>),
+}
+
+impl<T> Default for ListNode<T> {
+    fn default() -> Self {
+        Self::Empty
+    }
+}
+
+impl<T> ListNode<T> {
+    fn new(item: T, next: Box<ListNode<T>>) -> Self {
+        Self::NonEmpty(ListNodeValue::new(item, next))
+    }
+
+    fn take(&mut self) -> Self {
+        let mut cur = Self::Empty;
+        swap(&mut cur, self);
+        cur
+    }
+}
+
+#[derive(Debug, Default, Clone, PartialEq)]
+pub struct SinglyLinkedList<T> {
+    head: Box<ListNode<T>>,
+    size: usize,
+}
+
+impl<T> SinglyLinkedList<T> {
+    pub fn new() -> Self {
+        Self {
+            head: Box::new(ListNode::Empty),
+            size: 0,
+        }
+    }
+
+    pub fn push(&mut self, item: T) {
+        let cur_head = self.head.take();
+        let new_node = Box::new(ListNode::new(item, Box::new(cur_head)));
+
+        self.head = new_node;
+        self.size += 1;
+    }
+
+    pub fn pop(&mut self) -> Option<T> {
+        let node = self.head.take();
+
+        if let ListNode::NonEmpty(node) = node {
+            self.head = node.next;
+            self.size -= 1;
+            Some(node.item)
+        } else {
+            None
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        self.size
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+
 fn kernel_main(boot_info: &'static BootInfo) -> ! {
     use blog_os::allocator;
     use blog_os::memory::{self, BootInfoFrameAllocator};
